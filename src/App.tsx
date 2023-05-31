@@ -1,26 +1,25 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { navigationRoot } from './common';
+import { NavigationItem } from "./navigation";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ul>
+      <Sitemap item={navigationRoot} />
+    </ul>
   );
 }
 
 export default App;
+
+function Sitemap({ item }: { item: NavigationItem }) {
+  return (
+    <li>
+      <a href={item.fullpath}>{item.title}</a>
+      {item.children
+        ? <ul>{item.children.map(child => (<Sitemap key={child.path} item={child} />))}</ul>
+        : <></>
+      }
+    </li>
+  );
+}
