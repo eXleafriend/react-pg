@@ -1,3 +1,4 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
@@ -6,11 +7,12 @@ import {
 } from "react-router-dom";
 import { navigationRoot } from './common';
 import './index.css';
+import { Layout } from './Layout';
 import { convertToRouteObject } from './navigation-router';
 import reportWebVitals from './reportWebVitals';
 
 const router = createBrowserRouter([
-  convertToRouteObject(navigationRoot),
+  convertToRouteObject(navigationRoot, e => (<Layout>{e}</Layout>)),
 ]);
 
 const root = ReactDOM.createRoot(

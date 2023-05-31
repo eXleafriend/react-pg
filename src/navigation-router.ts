@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import {RouteObject} from "react-router-dom";
 
 export interface RoutingNavigationItem {
@@ -30,8 +30,14 @@ export function newRoutingNavigationItem(data: RoutingNavigationItemData, parent
   };
 }
 
-export function convertToRouteObject(item: RoutingNavigationItem): RouteObject {
-  const { path, element, children } = item;
+type convertElement = (node: ReactNode | null) => ReactNode | null;
+function noop(node: ReactNode | null) {
+  return node;
+}
+
+export function convertToRouteObject(item: RoutingNavigationItem, convertElement = noop): RouteObject {
+  const { path, element: el, children } = item;
+  const element = convertElement(el);
   if (children === undefined) {
     return {
       path,
@@ -47,7 +53,7 @@ export function convertToRouteObject(item: RoutingNavigationItem): RouteObject {
         element,
         index: true,
       },
-      ...children.map(child => convertToRouteObject(child)),
+      ...children.map(child => convertToRouteObject(child, convertElement)),
     ]
   };
 }
