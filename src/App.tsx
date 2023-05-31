@@ -1,25 +1,11 @@
-import React from 'react';
-import { navigationRoot } from './common';
-import { NavigationItem } from "./navigation";
+import React from "react";
 
 export function App() {
   return (
-    <ul>
-      <Sitemap item={navigationRoot} />
-    </ul>
+    <div className="text-center p-5">
+      <h1>React Playground</h1>
+    </div>
   );
 }
 
 export default App;
-
-function Sitemap({ item }: { item: NavigationItem }) {
-  return (
-    <li>
-      <a href={item.fullpath}>{item.title}</a>
-      {item.children
-        ? <ul>{item.children.map(child => (<Sitemap key={child.path} item={child} />))}</ul>
-        : <></>
-      }
-    </li>
-  );
-}
