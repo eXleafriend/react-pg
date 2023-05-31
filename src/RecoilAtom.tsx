@@ -1,6 +1,6 @@
 import React from "react";
 
-function RecoilAtom() {
+export function RecoilAtom() {
   return (
     <div>Recoil Atom</div>
   );

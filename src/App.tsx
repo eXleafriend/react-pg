@@ -2,7 +2,7 @@ import React from 'react';
 import { navigationRoot } from './common';
 import { NavigationItem } from "./navigation";
 
-function App() {
+export function App() {
   return (
     <ul>
       <Sitemap item={navigationRoot} />

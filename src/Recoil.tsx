@@ -1,6 +1,6 @@
 import React from "react";
 
-function Recoil() {
+export function Recoil() {
   return (
     <div>Recoil</div>
   );

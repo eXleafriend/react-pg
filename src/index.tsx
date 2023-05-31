@@ -4,47 +4,13 @@ import {
   createBrowserRouter,
   RouterProvider
 } from "react-router-dom";
-import App from './App';
+import { navigationRoot } from './common';
 import './index.css';
-import Recoil from './Recoil';
-import RecoilAtom from './RecoilAtom';
-import RecoilSelector from './RecoilSelector';
+import { convertToRouteObject } from './navigation-router';
 import reportWebVitals from './reportWebVitals';
-import Router from './Router';
 
 const router = createBrowserRouter([
-  {
-    path: "",
-    children: [
-      {
-        path: "",
-        element: <App />,
-        index: true,
-      },
-      {
-        path: "/router",
-        element: <Router />,
-      },
-      {
-        path: "/recoil",
-        children: [
-          {
-            path: "",
-            element: <Recoil />,
-            index: true,
-          },
-          {
-            path: "atom",
-            element: <RecoilAtom />,
-          },
-          {
-            path: "selector",
-            element: <RecoilSelector />,
-          },
-        ]
-      },
-    ]
-  },
+  convertToRouteObject(navigationRoot),
 ]);
 
 const root = ReactDOM.createRoot(

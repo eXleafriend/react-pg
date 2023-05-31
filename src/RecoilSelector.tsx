@@ -1,6 +1,6 @@
 import React from "react";
 
-function RecoilSelector() {
+export function RecoilSelector() {
   return (
     <div>Recoil Selector</div>
   );
