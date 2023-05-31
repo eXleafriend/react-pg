@@ -1,41 +1,47 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
 import {
   createBrowserRouter,
-  RouterProvider,
+  RouterProvider
 } from "react-router-dom";
-import Router from './Router';
+import App from './App';
+import './index.css';
 import Recoil from './Recoil';
 import RecoilAtom from './RecoilAtom';
 import RecoilSelector from './RecoilSelector';
+import reportWebVitals from './reportWebVitals';
+import Router from './Router';
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <App />,
-  },
-  {
-    path: "/router",
-    element: <Router />,
-  },
-  {
-    path: "/recoil",
+    path: "",
     children: [
       {
         path: "",
-        element: <Recoil />,
+        element: <App />,
         index: true,
       },
       {
-        path: "atom",
-        element: <RecoilAtom />,
+        path: "/router",
+        element: <Router />,
       },
       {
-        path: "selector",
-        element: <RecoilSelector />,
+        path: "/recoil",
+        children: [
+          {
+            path: "",
+            element: <Recoil />,
+            index: true,
+          },
+          {
+            path: "atom",
+            element: <RecoilAtom />,
+          },
+          {
+            path: "selector",
+            element: <RecoilSelector />,
+          },
+        ]
       },
     ]
   },
