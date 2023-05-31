@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/Form';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import { navigationRoot } from './common';
 
 export interface LayoutProp {
   title?: string;
@@ -22,7 +23,9 @@ export function Layout(prop: LayoutProp) {
       <header>
         <Navbar bg="dark" variant="dark" expand="md">
           <Container>
-            <Navbar.Brand href="#">Navbar scroll</Navbar.Brand>
+
+            <Navbar.Brand href={navigationRoot.fullpath}>{navigationRoot.title}</Navbar.Brand>
+
             <Navbar.Toggle aria-controls="navbarScroll" />
             <Navbar.Collapse id="navbarScroll">
               <Nav
@@ -30,22 +33,28 @@ export function Layout(prop: LayoutProp) {
                 style={{ maxHeight: '100px' }}
                 navbarScroll
               >
-                <Nav.Link href="#action1">Home</Nav.Link>
-                <Nav.Link href="#action2">Link</Nav.Link>
-                <NavDropdown title="Link" id="navbarScrollingDropdown">
-                  <NavDropdown.Item href="#action3">Action</NavDropdown.Item>
-                  <NavDropdown.Item href="#action4">
-                    Another action
-                  </NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item href="#action5">
-                    Something else here
-                  </NavDropdown.Item>
-                </NavDropdown>
-                <Nav.Link href="#" disabled>
-                  Link
-                </Nav.Link>
+
+                {navigationRoot.children === undefined
+                  ? (<></>)
+                  : navigationRoot.children.map(child => (
+                    <>
+                      {child.children === undefined
+                        ? (<Nav.Link href={child.fullpath} disabled={child.element === null}>{child.title}</Nav.Link>)
+                        : (
+                          <NavDropdown title={child.title} id="navbarScrollingDropdown">
+                            <NavDropdown.Item href={child.fullpath} disabled={child.element === null}>{child.title}</NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            {child.children.map(grand => (
+                              <NavDropdown.Item href={grand.fullpath} disabled={grand.element === null}>{grand.title}</NavDropdown.Item>
+                            ))}
+                          </NavDropdown>
+                        )
+                      }
+                    </>
+                  ))}
+
               </Nav>
+
               <Form className="d-flex">
                 <Form.Control
                   type="search"
@@ -55,6 +64,7 @@ export function Layout(prop: LayoutProp) {
                 />
                 <Button variant="outline-success">Search</Button>
               </Form>
+
             </Navbar.Collapse>
           </Container>
         </Navbar>

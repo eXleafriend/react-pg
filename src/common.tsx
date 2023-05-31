@@ -17,6 +17,11 @@ export const navigationRoot = newRoutingNavigationItem({
       element: <Router />,
     },
     {
+      title: "Redux",
+      path: "reduc",
+      element: null,
+    },
+    {
       title: "Recoil",
       path: "recoil",
       element: <Recoil />,
