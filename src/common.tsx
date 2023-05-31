@@ -1,10 +1,10 @@
-import React, { createElement } from "react";
-import { newRoutingNavigationItem } from "./navigation-router";
+import React from 'react';
 import { App } from './App';
-import Router from "./Router";
+import { newRoutingNavigationItem } from "./navigation-router";
 import Recoil from "./Recoil";
 import RecoilAtom from "./RecoilAtom";
 import RecoilSelector from "./RecoilSelector";
+import Router from "./Router";
 
 export const navigationRoot = newRoutingNavigationItem({
   title: "React Playground",
