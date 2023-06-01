@@ -75,7 +75,7 @@ export interface ItemColumn<T> {
     children: ReactNode;
   };
   data: {
-    children: (value: T) => ReactNode;
+    children: ReactNode | ((value: T) => ReactNode);
   }
 }
 
@@ -123,6 +123,14 @@ export function ItemTable<T>(props: ItemProps<T>) {
   );
 }
 
+function render<T>(expression: ReactNode | ((value: T) => ReactNode)): (value: T) => ReactNode {
+  if (typeof expression === "function") {
+    return expression;
+  } else {
+    return () => expression;
+  }
+}
+
 export function ItemTableBody<T>({ state, columns }: ItemProps<T>) {
   const data = useRecoilValue(state);
   return (
@@ -130,8 +138,8 @@ export function ItemTableBody<T>({ state, columns }: ItemProps<T>) {
       {data.map((record, i) => (
         <tr key={`tr-${i}`}>
           {columns.map((column, i) => (
-            <td key={`td-${i}`}>{column.data.children(record)}</td>
-          ))}
+            <td key={`td-${i}`}>{render(column.data.children)(record)}</td>
+          ))}e
         </tr>
       ))}
     </>
