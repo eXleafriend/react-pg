@@ -86,6 +86,7 @@ export interface ItemProps<T> {
 
 export function ItemTable<T>(props: ItemProps<T>) {
   const { columns } = props;
+  const page = parseInt(new URLSearchParams(global.location.search).get("page") || "1", 10);
   return (
     <>
       <Table striped bordered hover>
@@ -112,7 +113,9 @@ export function ItemTable<T>(props: ItemProps<T>) {
       <nav aria-label="Page navigation example">
         <ul className="pagination">
           {arrayRange(1, 10).map(i => (
-            <li className="page-item" key={`page-${i}`}><Link className="page-link" to={`?page=${i}`}>{i}</Link></li>
+            <li className={`page-item ${i === page ? "active" : ""}`} key={`page-${i}`}>
+              <Link className="page-link" to={`?page=${i}`}>{i}</Link>
+            </li>
           ))}
         </ul>
       </nav>
