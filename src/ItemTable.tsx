@@ -47,7 +47,6 @@ export function buildBuildQuery<T extends SimpleObject>(builder: Builder<T>): Bu
       const name = searchParamName || key;
       const searchParam = searchParams.get(name);
       const value = parseSearchParam(searchParam);
-      console.log(`searchParam: ${name} = ${searchParam} => ${value}`);
       query[key] = value;
     };
     return query;
@@ -64,8 +63,6 @@ export function useUpdateQuery<T extends SimpleObject>(
 ) {
   const [query, setQuery] = useRecoilState(queryState);
   const $query = buildQuery(searchParams);
-  console.log("query", query);
-  console.log("$query", $query);
   return () => {
     if (!shallowEqual(query, $query)) {
       setQuery($query);
