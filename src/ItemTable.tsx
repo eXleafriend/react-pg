@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { ProgressBar, Table } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import { RecoilState, RecoilValue, useRecoilState, useRecoilValue } from "recoil";
@@ -72,10 +72,10 @@ export function useQueryUpdate<T extends SimpleObject>(
 
 export interface ItemColumn<T> {
   heading: {
-    text: string;
+    children: ReactNode;
   };
-  body: {
-    text: (value: T) => string;
+  data: {
+    children: (value: T) => ReactNode;
   }
 }
 
@@ -93,7 +93,7 @@ export function ItemTable<T>(props: ItemProps<T>) {
         <thead>
           <tr>
             {columns.map((column, i) => (
-              <th key={`th-${i}`}>{column.heading.text}</th>
+              <th key={`th-${i}`}>{column.heading.children}</th>
             ))}
           </tr>
         </thead>
@@ -130,7 +130,7 @@ export function ItemTableBody<T>({ state, columns }: ItemProps<T>) {
       {data.map((record, i) => (
         <tr key={`tr-${i}`}>
           {columns.map((column, i) => (
-            <td key={`td-${i}`}>{column.body.text(record)}</td>
+            <td key={`td-${i}`}>{column.data.children(record)}</td>
           ))}
         </tr>
       ))}

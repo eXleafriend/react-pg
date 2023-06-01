@@ -44,18 +44,18 @@ export function ComponentsItemTable() {
   const dataColumns = [
     {
       heading: {
-        text: "#",
+        children: "#",
       },
-      body: {
-        text: (post: Post) => `${post.id}`,
+      data: {
+        children: (post: Post) => `${post.id}`,
       },
     },
     {
       heading: {
-        text: "Title",
+        children: "Title",
       },
-      body: {
-        text: (post: Post) => `${post.title}`,
+      data: {
+        children: (post: Post) => `${post.title}`,
       },
     },
   ];
