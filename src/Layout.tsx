@@ -36,21 +36,21 @@ export function Layout(prop: LayoutProp) {
 
                 {navigationRoot.children === undefined
                   ? (<></>)
-                  : navigationRoot.children.map(child => (
-                    <>
+                  : navigationRoot.children.map((child, i )=> (
+                    <div key={i}>
                       {child.children === undefined
                         ? (<Nav.Link href={child.fullpath} disabled={child.element === null}>{child.title}</Nav.Link>)
                         : (
                           <NavDropdown title={child.title} id="navbarScrollingDropdown">
                             <NavDropdown.Item href={child.fullpath} disabled={child.element === null}>{child.title}</NavDropdown.Item>
                             <NavDropdown.Divider />
-                            {child.children.map(grand => (
-                              <NavDropdown.Item href={grand.fullpath} disabled={grand.element === null}>{grand.title}</NavDropdown.Item>
+                            {child.children.map((grand, i) => (
+                              <NavDropdown.Item key={i} href={grand.fullpath} disabled={grand.element === null}>{grand.title}</NavDropdown.Item>
                             ))}
                           </NavDropdown>
                         )
                       }
-                    </>
+                    </div>
                   ))}
 
               </Nav>
