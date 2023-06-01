@@ -32,13 +32,40 @@ export function buildQueryStrring(query: SimpleObject) {
     ;
 }
 
+export type Builder<T> = {
+  [key in keyof T]: {
+    searchParamName?: string;
+    parseSearchParam: (searchParam: string | null) => T[key],
+  }
+};
+
+export function buildBuildQuery<T extends SimpleObject>(builder: Builder<T>): BuildQuery<T> {
+  return searchParams => {
+    const query: T = {} as any as T;
+    for (const key in builder) {
+      const { searchParamName, parseSearchParam } = builder[key];
+      const name = searchParamName || key;
+      const searchParam = searchParams.get(name);
+      const value = parseSearchParam(searchParam);
+      console.log(`searchParam: ${name} = ${searchParam} => ${value}`);
+      query[key] = value;
+    };
+    return query;
+  };
+
+}
+
+export type BuildQuery<T> = (params: URLSearchParams) => T;
+
 export function useUpdateQuery<T extends SimpleObject>(
   searchParams: URLSearchParams,
   queryState: RecoilState<T>,
-  buildQuery: (params: URLSearchParams) => T,
+  buildQuery: BuildQuery<T>,
 ) {
   const [query, setQuery] = useRecoilState(queryState);
   const $query = buildQuery(searchParams);
+  console.log("query", query);
+  console.log("$query", $query);
   return () => {
     if (!shallowEqual(query, $query)) {
       setQuery($query);

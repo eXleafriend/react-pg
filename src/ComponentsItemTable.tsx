@@ -1,15 +1,7 @@
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { atom, selector } from "recoil";
-import { buildQueryStrring, ItemTable, useUpdateQuery } from "./ItemTable";
-
-function parsePage(str: string | null): number {
-  if (str === null) {
-    return 1;
-  }
-  return parseInt(str, 10);
-}
+import { buildBuildQuery, buildQueryStrring, ItemTable, useUpdateQuery } from "./ItemTable";
 
 interface Post {
   userId: number;
@@ -17,6 +9,18 @@ interface Post {
   title: string;
   body: string;
 }
+
+const buildQuery = buildBuildQuery({
+  _page: {
+    searchParamName: "page",
+    parseSearchParam(str: string | null) {
+      if (str === null) {
+        return 1;
+      }
+      return parseInt(str, 10);
+    },
+  },
+});
 
 const queryState = atom({
   key: "queryState",
@@ -34,18 +38,10 @@ const dataState = selector({
   },
 });
 
-function buildQuery(params: URLSearchParams) {
-  return {
-    _page: parsePage(params.get("page")),
-  };
-}
-
 export function ComponentsItemTable() {
 
   const [searchParams] = useSearchParams();
-
   const updateQuery = useUpdateQuery(searchParams, queryState, buildQuery);
-
   useEffect(() => {
     updateQuery();
   }, [updateQuery]);
@@ -68,6 +64,7 @@ export function ComponentsItemTable() {
       },
     },
   ];
+
   return (
     <>
       <div>Item</div>
