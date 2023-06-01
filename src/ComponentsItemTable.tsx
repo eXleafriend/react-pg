@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { ProgressBar, Table } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
-import { atom, RecoilValue, selector, useRecoilState, useRecoilValue } from "recoil";
+import { atom, RecoilState, RecoilValue, selector, useRecoilState, useRecoilValue } from "recoil";
 
 function parsePage(str: string | null): number {
   if (str === null) {
@@ -10,7 +10,11 @@ function parsePage(str: string | null): number {
   return parseInt(str, 10);
 }
 
-function shallowEqual(object1: { [key: string]: any }, object2: { [key: string]: any }) {
+interface SimpleObject {
+  [key: string]: any;
+}
+
+function shallowEqual(object1: SimpleObject, object2: SimpleObject) {
   const keys1 = Object.keys(object1);
   const keys2 = Object.keys(object2);
 
@@ -36,9 +40,7 @@ interface Post {
 
 const queryState = atom({
   key: "queryState",
-  default: {
-    _page: parsePage(new URLSearchParams(global.location.search).get("page")),
-  },
+  default: buildQuery(new URLSearchParams(global.location.search)),
 });
 
 const dataState = selector({
@@ -52,7 +54,7 @@ const dataState = selector({
   },
 });
 
-function buildQueryStrring(query: { [key: string]: any }) {
+function buildQueryStrring(query: SimpleObject) {
   return Object.entries(query)
     .filter(([, value]) => value !== undefined)
     .map(([key, value]) => `${key}=${value}`)
@@ -60,19 +62,31 @@ function buildQueryStrring(query: { [key: string]: any }) {
     ;
 }
 
+function buildQuery(params: URLSearchParams) {
+  return {
+    _page: parsePage(params.get("page")),
+  };
+}
+
+function useUpdateQuery<T extends SimpleObject>(queryState: RecoilState<T>, buildQuery: (params: URLSearchParams) => T, searchParams: URLSearchParams) {
+  const [query, setQuery] = useRecoilState(queryState);
+  const $query = buildQuery(searchParams);
+  return () => {
+    if (!shallowEqual(query, $query)) {
+      setQuery($query);
+    }
+  };
+}
+
 export function ComponentsItemTable() {
 
   const [searchParams] = useSearchParams();
 
-  const [query, setQuery] = useRecoilState(queryState);
-  const $query = {
-    _page: parsePage(searchParams.get("page")),
-  };
+  const updateQuery = useUpdateQuery(queryState, buildQuery, searchParams);
+
   useEffect(() => {
-    if (!shallowEqual(query, $query)) {
-      setQuery($query);
-    }
-  }, [setQuery, $query]);
+    updateQuery();
+  }, [updateQuery]);
 
   const dataColumns = [
     {
