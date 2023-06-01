@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import React from "react";
 import { atom, selector } from "recoil";
-import { buildBuildQuery, buildQueryStrring, ItemTable, useUpdateQuery } from "./ItemTable";
+import { buildBuildQuery, buildQueryStrring, ItemTable, useQueryUpdate } from "./ItemTable";
 
 interface Post {
   userId: number;
@@ -40,11 +39,7 @@ const dataState = selector({
 
 export function ComponentsItemTable() {
 
-  const [searchParams] = useSearchParams();
-  const updateQuery = useUpdateQuery(searchParams, queryState, buildQuery);
-  useEffect(() => {
-    updateQuery();
-  }, [updateQuery]);
+  useQueryUpdate(queryState, buildQuery);
 
   const dataColumns = [
     {

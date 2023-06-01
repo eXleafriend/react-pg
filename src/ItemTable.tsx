@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ProgressBar, Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { RecoilState, RecoilValue, useRecoilState, useRecoilValue } from "recoil";
 
 export interface SimpleObject {
@@ -56,18 +56,18 @@ export function buildBuildQuery<T extends SimpleObject>(builder: Builder<T>): Bu
 
 export type BuildQuery<T> = (params: URLSearchParams) => T;
 
-export function useUpdateQuery<T extends SimpleObject>(
-  searchParams: URLSearchParams,
+export function useQueryUpdate<T extends SimpleObject>(
   queryState: RecoilState<T>,
   buildQuery: BuildQuery<T>,
 ) {
+  const [searchParam] = useSearchParams();
   const [query, setQuery] = useRecoilState(queryState);
-  const $query = buildQuery(searchParams);
-  return () => {
+  const $query = buildQuery(searchParam);
+  useEffect(() => {
     if (!shallowEqual(query, $query)) {
       setQuery($query);
     }
-  };
+  }, [query, setQuery, $query]);
 }
 
 export interface ItemColumn<T> {
