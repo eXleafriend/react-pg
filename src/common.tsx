@@ -1,5 +1,7 @@
 import React from 'react';
 import { App } from './App';
+import Components from './Components';
+import ComponentsItemTable from './ComponentsItemTable';
 import { newRoutingNavigationItem } from "./navigation-router";
 import Recoil from "./Recoil";
 import RecoilAtom from "./RecoilAtom";
@@ -35,6 +37,18 @@ export const navigationRoot = newRoutingNavigationItem({
           title: "Selector",
           path: "selector",
           element: <RecoilSelector />,
+        },
+      ]
+    },
+    {
+      title: "Components",
+      path: "components",
+      element: <Components />,
+      children: [
+        {
+          title: "ItemTable",
+          path: "item-table",
+          element: <ComponentsItemTable />,
         },
       ]
     },

@@ -5,6 +5,7 @@ import {
   createBrowserRouter,
   RouterProvider
 } from "react-router-dom";
+import { RecoilRoot } from 'recoil';
 import { navigationRoot } from './common';
 import './index.css';
 import { Layout } from './Layout';
@@ -20,7 +21,9 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <RecoilRoot>
+      <RouterProvider router={router} />
+    </RecoilRoot>
   </React.StrictMode>
 );
 
