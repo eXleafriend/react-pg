@@ -1,37 +1,7 @@
 import React from "react";
 import { selectorFamily, useRecoilValue } from "recoil";
-import { buildQueryStrring, createQueryAndData, ItemColumn, ItemColumns, ItemTable } from "./ItemTable";
-
-interface User {
-  id: number,
-  name: string,
-  username: string,
-  email: string,
-  address: {
-    street: string,
-    suite: string,
-    city: string,
-    zipcode: string,
-    geo: {
-      lat: string,
-      lng: string
-    }
-  },
-  phone: string,
-  website: string,
-  company: {
-    name: string,
-    catchPhrase: string,
-    bs: string
-  }
-}
-
-interface Post {
-  userId: number;
-  id: number;
-  title: string;
-  body: string;
-}
+import { Post, User } from "./data-types";
+import { buildQueryStrring, createQueryAndData, ItemColumns, ItemTable } from "./ItemTable";
 
 const userQuery = selectorFamily({
   key: "ComponentItemTable:User",
