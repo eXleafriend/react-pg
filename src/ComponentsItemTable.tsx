@@ -41,16 +41,10 @@ export function ComponentsItemTable() {
 
   useQueryUpdate(queryState, buildQuery);
 
-  const dataColumns = [
-    {
-      heading: "#",
-      data: (post: Post) => `${post.id}`,
-    },
-    {
-      heading: "Title",
-      data: (post: Post) => `${post.title}`,
-    },
-  ];
+  const dataColumns = {
+    "#": (post: Post) => `${post.id}`,
+    Title: (post: Post) => `${post.title}`,
+  };
 
   return (
     <>

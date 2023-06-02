@@ -70,6 +70,10 @@ export function useQueryUpdate<T extends SimpleObject>(
   }, [query, setQuery, $query]);
 }
 
+export interface ItemColumns<T> {
+  [key: string]: Render<T> | ReactNode | ItemColumnData<T>;
+}
+
 export interface ItemColumn<T> {
   heading: ReactNode | ItemColumnHeading;
   data: Render<T> | ReactNode | ItemColumnData<T>;
@@ -87,7 +91,7 @@ export type Render<T> = (value: T) => ReactNode;
 
 export interface ItemProps<T> {
   state: RecoilValue<T[]>;
-  columns: ItemColumn<T>[];
+  columns: ItemColumn<T>[] | ItemColumns<T>;
 }
 
 function renderHeading<T>(expression: ReactNode | { children: ReactNode }): ReactNode {
@@ -100,8 +104,16 @@ function renderHeading<T>(expression: ReactNode | { children: ReactNode }): Reac
   }
 }
 
+function arrayizeColumns<T>(columns: ItemColumn<T>[] | ItemColumns<T>) {
+  if (Array.isArray(columns)) {
+    return columns;
+  } else {
+    return Object.entries(columns).map(([heading, data]) => ({ heading, data }));
+  }
+}
+
 export function ItemTable<T>(props: ItemProps<T>) {
-  const { columns } = props;
+  const columns = arrayizeColumns(props.columns);
   const page = parseInt(new URLSearchParams(global.location.search).get("page") || "1", 10);
   return (
     <>
@@ -152,8 +164,9 @@ function rendeData<T>(expression: Render<T> | ReactNode | { children: Render<T> 
   }
 }
 
-export function ItemTableBody<T>({ state, columns }: ItemProps<T>) {
+export function ItemTableBody<T>({ state, columns: $columns }: ItemProps<T>) {
   const data = useRecoilValue(state);
+  const columns = arrayizeColumns($columns);
   return (
     <>
       {data.map((record, i) => (
