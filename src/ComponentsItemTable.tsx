@@ -84,7 +84,7 @@ export function ComponentsItemTable() {
 
   return (
     <>
-      <div>Item</div>
+      <h2>Item</h2>
       <ItemTable state={dataState} columns={dataColumns} />
     </>
   );
