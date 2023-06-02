@@ -1,7 +1,18 @@
 import React, { ReactNode, useEffect } from "react";
 import { ProgressBar, Table } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
-import { RecoilState, RecoilValue, useRecoilState, useRecoilValue } from "recoil";
+import {
+  atom,
+  GetCallback,
+  GetRecoilValue,
+  Loadable,
+  RecoilState,
+  RecoilValue,
+  selector,
+  useRecoilState,
+  useRecoilValue,
+  WrappedValue,
+} from "recoil";
 
 export interface SimpleObject {
   [key: string]: any;
@@ -32,16 +43,16 @@ export function buildQueryStrring(query: SimpleObject) {
     ;
 }
 
-export type Builder<T> = {
-  [key in keyof T]: {
+export type QueryBuilders<Q> = {
+  [key in keyof Q]: {
     searchParamName?: string;
-    parseSearchParam: (searchParam: string | null) => T[key],
+    parseSearchParam: (searchParam: string | null) => Q[key],
   }
 };
 
-export function buildBuildQuery<T extends SimpleObject>(builder: Builder<T>): BuildQuery<T> {
+export function buildBuildQuery<Q extends SimpleObject>(builder: QueryBuilders<Q>): BuildQuery<Q> {
   return searchParams => {
-    const query: T = {} as any as T;
+    const query: Q = {} as any as Q;
     for (const key in builder) {
       const { searchParamName, parseSearchParam } = builder[key];
       const name = searchParamName || key;
@@ -185,3 +196,46 @@ const arrayRange = (start: number, stop: number, step: number = 1) =>
     { length: (stop - start) / step + 1 },
     (value, index) => start + index * step
   );
+
+interface GetOpt<Q> {
+  get: GetRecoilValue;
+  getCallback: GetCallback;
+  queryState: RecoilState<Q>;
+}
+
+type Get<Q, T> = (opts: GetOpt<Q>) => Promise<T> | RecoilValue<T> | Loadable<T> | WrappedValue<T> | T;
+
+export function createQueryAndData<Q extends SimpleObject, T>(
+  queryStateKey: string,
+  builder: QueryBuilders<Q>,
+  dataStateKey: string,
+  get: Get<Q, T>,
+) {
+
+  const buildQuery = buildBuildQuery(builder);
+
+  const queryState = atom({
+    key: queryStateKey,
+    default: buildQuery(new URLSearchParams(global.location.search)),
+  });
+
+  const dataState = selector({
+    key: dataStateKey,
+    get: opt => get({ ...opt, queryState }),
+  });
+
+  function useQueryUpdate() {
+    const [searchParam] = useSearchParams();
+    const [query, setQuery] = useRecoilState(queryState);
+    const $query = buildQuery(searchParam);
+    useEffect(() => {
+      if (!shallowEqual(query, $query)) {
+        setQuery($query);
+      }
+    }, [query, setQuery, $query]);
+
+  }
+
+  return [useQueryUpdate, dataState, buildQuery, queryState] as const;
+
+}
