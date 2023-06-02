@@ -3,7 +3,7 @@ import { selectorFamily, useRecoilValue } from "recoil";
 import { buildQueryStrring, createQueryAndData, ItemTable } from "./ItemTable";
 
 interface User {
-  $1: number,
+  id: number,
   name: string,
   username: string,
   email: string,
