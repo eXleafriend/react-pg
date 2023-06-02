@@ -1,5 +1,30 @@
 import React from "react";
+import { selectorFamily, useRecoilValue } from "recoil";
 import { buildQueryStrring, createQueryAndData, ItemTable } from "./ItemTable";
+
+interface User {
+  $1: number,
+  name: string,
+  username: string,
+  email: string,
+  address: {
+    street: string,
+    suite: string,
+    city: string,
+    zipcode: string,
+    geo: {
+      lat: string,
+      lng: string
+    }
+  },
+  phone: string,
+  website: string,
+  company: {
+    name: string,
+    catchPhrase: string,
+    bs: string
+  }
+}
 
 interface Post {
   userId: number;
@@ -7,6 +32,16 @@ interface Post {
   title: string;
   body: string;
 }
+
+const userQuery = selectorFamily({
+  key: "ComponentItemTable:User",
+  get: (userId: number) => async () => {
+    const user = fetch(`https://jsonplaceholder.typicode.com/users/${userId}`)
+      .then(response => response.json())
+      .then(json => json as User);
+    return user;
+  },
+});
 
 const [useQueryUpdate, dataState] = createQueryAndData(
 
@@ -41,6 +76,10 @@ export function ComponentsItemTable() {
   const dataColumns = {
     "#": (post: Post) => `${post.id}`,
     Title: (post: Post) => `${post.title}`,
+    User: (post: Post) => {
+      const user = useRecoilValue(userQuery(post.userId));
+      return user.name;
+    },
   };
 
   return (
