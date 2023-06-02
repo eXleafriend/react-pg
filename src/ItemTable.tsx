@@ -71,17 +71,33 @@ export function useQueryUpdate<T extends SimpleObject>(
 }
 
 export interface ItemColumn<T> {
-  heading: {
-    children: ReactNode;
-  };
-  data: {
-    children: ReactNode | ((value: T) => ReactNode);
-  }
+  heading: ReactNode | ItemColumnHeading;
+  data: Render<T> | ReactNode | ItemColumnData<T>;
 }
+
+export interface ItemColumnHeading {
+  children: ReactNode;
+}
+
+export interface ItemColumnData<T> {
+  children: Render<T> | ReactNode;
+}
+
+export type Render<T> = (value: T) => ReactNode;
 
 export interface ItemProps<T> {
   state: RecoilValue<T[]>;
   columns: ItemColumn<T>[];
+}
+
+function renderHeading<T>(expression: ReactNode | { children: ReactNode }): ReactNode {
+  if (expression === undefined || expression === null || typeof expression === "boolean" || typeof expression === "number" || typeof expression === "string") {
+    return expression;
+  } else if ("children" in expression) {
+    return expression.children;
+  } else {
+    return expression;
+  }
 }
 
 export function ItemTable<T>(props: ItemProps<T>) {
@@ -93,7 +109,7 @@ export function ItemTable<T>(props: ItemProps<T>) {
         <thead>
           <tr>
             {columns.map((column, i) => (
-              <th key={`th-${i}`}>{column.heading.children}</th>
+              <th key={`th-${i}`}>{renderHeading(column.heading)}</th>
             ))}
           </tr>
         </thead>
@@ -123,9 +139,14 @@ export function ItemTable<T>(props: ItemProps<T>) {
   );
 }
 
-function render<T>(expression: ReactNode | ((value: T) => ReactNode)): (value: T) => ReactNode {
-  if (typeof expression === "function") {
+function rendeData<T>(expression: Render<T> | ReactNode | { children: Render<T> | ReactNode }): Render<T> {
+  if (expression === undefined || expression === null || typeof expression === "boolean" || typeof expression === "number" || typeof expression === "string") {
+    return () => expression;
+  } else if (typeof expression === "function") {
     return expression;
+  } else if ("children" in expression) {
+    expression;
+    return rendeData(expression.children);
   } else {
     return () => expression;
   }
@@ -138,8 +159,8 @@ export function ItemTableBody<T>({ state, columns }: ItemProps<T>) {
       {data.map((record, i) => (
         <tr key={`tr-${i}`}>
           {columns.map((column, i) => (
-            <td key={`td-${i}`}>{render(column.data.children)(record)}</td>
-          ))}e
+            <td key={`td-${i}`}>{rendeData(column.data)(record)}</td>
+          ))}
         </tr>
       ))}
     </>
