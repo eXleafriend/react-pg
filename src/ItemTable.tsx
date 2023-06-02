@@ -1,3 +1,4 @@
+import { render } from "@testing-library/react";
 import React, { ReactNode, useEffect } from "react";
 import { ProgressBar, Table } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
@@ -95,10 +96,11 @@ export interface ItemColumnHeading {
 }
 
 export interface ItemColumnData<T> {
+  title?: Render<T, string | undefined> | string | undefined;
   children: Render<T> | ReactNode;
 }
 
-export type Render<T> = (value: T) => ReactNode;
+export type Render<T, R = ReactNode> = (value: T) => R;
 
 export interface ItemProps<T> {
   state: RecoilValue<T[]>;
@@ -162,28 +164,47 @@ export function ItemTable<T>(props: ItemProps<T>) {
   );
 }
 
-function rendeData<T>(expression: Render<T> | ReactNode | { children: Render<T> | ReactNode }): Render<T> {
-  if (expression === undefined || expression === null || typeof expression === "boolean" || typeof expression === "number" || typeof expression === "string") {
-    return () => expression;
-  } else if (typeof expression === "function") {
-    return expression;
-  } else if ("children" in expression) {
-    expression;
+function rendeData<T, R>(expression: Render<T, R> | R | { children: Render<T, R> | R }): Render<T, R> {
+
+  if (typeof expression === "function") {
+    return expression as Render<T, R>;
+  } else if (typeof expression === "object" && expression !== null && "children" in expression) {
     return rendeData(expression.children);
   } else {
     return () => expression;
+  }
+
+}
+
+function extract<T>(column: ItemColumn<T>, key: Exclude<keyof ItemColumnData<T>, "children">) {
+  const data = column.data;
+  if (data === undefined || data === null || typeof data === "boolean" || typeof data === "number" || typeof data === "string") {
+    return () => undefined;
+  } else if (typeof data === "function") {
+    return () => undefined;
+  } else if ("children" in data) {
+    if ("type" in data) {
+      return () => undefined;
+    } else {
+      return rendeData(data[key]);
+    }
+  } else {
+    return () => undefined;
   }
 }
 
 export function ItemTableBody<T>({ state, columns: $columns }: ItemProps<T>) {
   const data = useRecoilValue(state);
   const columns = arrayizeColumns($columns);
+
   return (
     <>
       {data.map((record, i) => (
         <tr key={`tr-${i}`}>
           {columns.map((column, i) => (
-            <td key={`td-${i}`}>{rendeData(column.data)(record)}</td>
+            <td key={`td-${i}`} title={rendeData(extract(column, "title"))(record)}>
+              {rendeData(column.data)(record)}
+            </td>
           ))}
         </tr>
       ))}

@@ -1,6 +1,6 @@
 import React from "react";
 import { selectorFamily, useRecoilValue } from "recoil";
-import { buildQueryStrring, createQueryAndData, ItemTable } from "./ItemTable";
+import { buildQueryStrring, createQueryAndData, ItemColumn, ItemColumns, ItemTable } from "./ItemTable";
 
 interface User {
   id: number,
@@ -73,12 +73,18 @@ export function ComponentsItemTable() {
 
   useQueryUpdate();
 
-  const dataColumns = {
+  const dataColumns: ItemColumns<Post> = {
     "#": (post: Post) => `${post.id}`,
     Title: (post: Post) => `${post.title}`,
-    User: (post: Post) => {
-      const user = useRecoilValue(userQuery(post.userId));
-      return user.name;
+    User: {
+      title: (post: Post) => {
+        const user = useRecoilValue(userQuery(post.userId));
+        return user.username;
+      },
+      children: (post: Post) => {
+        const user = useRecoilValue(userQuery(post.userId));
+        return user.name;
+      },
     },
   };
 
