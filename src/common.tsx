@@ -4,6 +4,7 @@ import Components from './Components';
 import ComponentsItemTable from './ComponentsItemTable';
 import { newRoutingNavigationItem } from "./navigation-router";
 import Recoil from "./Recoil";
+import PartialObjectForm from './recoil/partial-object-form';
 import RecoilAtom from "./RecoilAtom";
 import RecoilSelector from "./RecoilSelector";
 import Router from "./Router";
@@ -37,6 +38,11 @@ export const navigationRoot = newRoutingNavigationItem({
           title: "Selector",
           path: "selector",
           element: <RecoilSelector />,
+        },
+        {
+          title: "Partial Object Form",
+          path: "partial-object-for",
+          element: <PartialObjectForm />,
         },
       ]
     },
