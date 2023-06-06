@@ -76,6 +76,10 @@ class PathedObject {
     const paths = this.path.split(".");
 
     function lookup(object: Json, paths: string[], value: Json): void {
+      console.log("=== lookup() ===");
+      console.log("lookup() object =", object);
+      console.log("lookup() paths =", paths);
+      console.log("lookup() value =", value);
       const [key, ...rest] = paths;
       if (object === undefined || object === null) {
         return undefined;
@@ -89,8 +93,10 @@ class PathedObject {
             const index = parseInt(key, 10);
             if (rest.length == 0) {
               object[index] = value;
+              console.log("lookup() index =", index);
+              return;
             } else {
-              return lookup(value, rest, value);
+              return lookup(object[index], rest, value);
             }
           } else {
             return undefined;
@@ -98,8 +104,10 @@ class PathedObject {
         } else {
           if (rest.length == 0) {
             (object as ComplexObject)[key] = value;
+            console.log("lookup() key =", key);
+            return;
           } else {
-            return lookup(value, rest, value);
+            return lookup( (object as ComplexObject)[key], rest, value);
           }
         }
       }
@@ -179,13 +187,17 @@ export const PartialObjectForm = function PartialObjectForm() {
   function updateJson(newValue: string) {
     setJson(newValue);
     try {
+      console.log("updateJson() -- newValue = ", newValue);
       const value = JSON.parse(newValue);
-      if (JSON.stringify(object) === JSON.stringify(value)) {
-        setFormClassName("");
-        object.setPathedObject(value);
-      } else {
-        setFormClassName("changed");
-      }
+      console.log("updateJson() -- value = ", value);
+      // if (JSON.stringify(object) === JSON.stringify(value)) {
+      //   setFormClassName("");
+      // } else {
+      //   setFormClassName("changed");
+      // }
+      object.setPathedObject(value);
+      console.log("updateJson() -- object.object = ", object.object);
+      setObject(new PathedObject(object.object, object.path));
     } catch {
       setFormClassName("invalid");
     }
@@ -196,7 +208,7 @@ export const PartialObjectForm = function PartialObjectForm() {
       <Row>
         <Col>
           <div>Whole</div>
-          <textarea value={jsonFormat(object, { type: "space", size: 2 })} rows={25} style={{
+          <textarea value={jsonFormat(object.object!, { type: "space", size: 2 })} rows={25} style={{
             width: '100%',
           }} readOnly />
         </Col>
