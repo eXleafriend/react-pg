@@ -2,126 +2,121 @@ import React, { ReactNode, useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import jsonFormat from 'json-format';
 
-export type Scalar =
-  | undefined
+export type JsonScalar =
   | null
   | boolean
   | string
   | number
   ;
 
-export interface ComplexObject {
-  [key: string]: Json;
+export interface JsonObject {
+  [key: string]: JsonValue;
 }
 
-export type ComplexArray = Json[];
+export type JsonArray = JsonValue[];
 
-export type Json = Scalar | ComplexObject | ComplexArray;
+export type JsonValue = JsonScalar | JsonObject | JsonArray;
 
-class PathedObject {
-  public constructor(
-    public object: Json,
-    public readonly path?: string,
-  ) {
+export type ValueAndPath = [JsonValue, string];
+
+function lookupValueAndPath([value, path]: ValueAndPath): JsonValue {
+
+  function lookup(value: JsonValue, paths: string[]): JsonValue {
+    if (value === null) {
+      return null;
+    }
+    if (paths.length === 0) {
+      return value;
+    }
+
+    if (typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
+      console.warn(`Ignore paths for ${typeof value} type: `, paths);
+      return value;
+    }
+
+    const [key, ...rest] = paths;
+    if (Array.isArray(value)) {
+      if (/^\d+$/.test(key)) {
+        const index = parseInt(key, 10);
+        return lookup(value[index], rest);
+      } else {
+        console.warn(`Ignore key "${key}" for Array type (paths: ${JSON.stringify(paths)})`);
+        return value;
+      }
+
+    } else {
+
+      return lookup(value[key], rest);
+    }
+
   }
 
-  public getPathedObject(): Json {
-    if (this.path === undefined) {
-      return this.object;
+  return lookup(value, path === "" ? [] : path.split("."));
+
+}
+
+function patchValueAndPath([value, path]: ValueAndPath, propValue: JsonValue): JsonValue {
+
+  function patch(value: JsonValue, paths: string[], propValue: JsonValue): JsonValue {
+    console.log("=== patch() ===")
+    console.log("patch() <<< value = ", value)
+    console.log("patch() <<< paths = ", paths)
+    console.log("patch() <<< propValue = ", propValue)
+    if (value === null) {
+      console.log("patch() >>> value = ", null)
+      return null;
+    }
+    if (paths.length === 0) {
+      console.log("patch() >>> value = ", value)
+      return propValue;
     }
 
-    const paths = this.path.split(".");
-
-    function lookup(object: Json, paths: string[]): Json {
-      const [key, ...rest] = paths;
-      if (object === undefined || object === null) {
-        return undefined;
-      }
-      if (typeof object === "boolean" || typeof object === "number" || typeof object === "string") {
-        return undefined;
-      }
-      if (key in object) {
-        if (/^\d+$/.test(key)) {
-          if (Array.isArray(object)) {
-            const index = parseInt(key, 10);
-            const value = object[index];
-            if (rest.length == 0) {
-              return value;
-            } else {
-              return lookup(value, rest);
-            }
-          } else {
-            return undefined;
-          }
-        } else {
-          const value = (object as ComplexObject)[key];
-          if (rest.length == 0) {
-            return value;
-          } else {
-            return lookup(value, rest);
-          }
-        }
-      }
-
+    if (typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
+      console.warn(`Ignore paths for ${typeof value} type: `, paths);
+      console.log("patch() >>> value = ", value)
+      return propValue;
     }
-    return lookup(this.object, paths);
+
+    const [key, ...rest] = paths;
+    if (Array.isArray(value)) {
+      if (/^\d+$/.test(key)) {
+        const index = parseInt(key, 10);
+        const array = [...value];
+        console.log("patch() --- array = ", array);
+        console.log("patch() --- index = ", index);
+        console.log("patch() --- rest = ", rest);
+        const patched = patch(array[index], rest, propValue);
+        console.log("patch() --- patched = ", patched);
+          array[index] = patched;
+        console.log("patch() >>> array = ", array);
+        return array;
+      } else {
+        console.warn(`Ignore key "${key}" for Array type (paths: ${JSON.stringify(paths)})`);
+        return value;
+      }
+
+    } else {
+      const object = { ...value };
+      console.log("patch() --- object = ", object);
+      console.log("patch() --- key = ", key);
+      console.log("patch() --- rest = ", rest);
+      const patched = patch(value[key], rest, propValue);
+      console.log("patch() --- patched = ", patched);
+      object[key] = patched;
+      console.log("patch() --- object = ", object);
+      return object;
+    }
+
   }
 
-  public setPathedObject(value: Json): void {
-    if (this.path === undefined) {
-      this.object = value;
-      return;
-    }
-
-    const paths = this.path.split(".");
-
-    function lookup(object: Json, paths: string[], value: Json): void {
-      console.log("=== lookup() ===");
-      console.log("lookup() object =", object);
-      console.log("lookup() paths =", paths);
-      console.log("lookup() value =", value);
-      const [key, ...rest] = paths;
-      if (object === undefined || object === null) {
-        return undefined;
-      }
-      if (typeof object === "boolean" || typeof object === "number" || typeof object === "string") {
-        return undefined;
-      }
-      if (key in object) {
-        if (/^\d+$/.test(key)) {
-          if (Array.isArray(object)) {
-            const index = parseInt(key, 10);
-            if (rest.length == 0) {
-              object[index] = value;
-              console.log("lookup() index =", index);
-              return;
-            } else {
-              return lookup(object[index], rest, value);
-            }
-          } else {
-            return undefined;
-          }
-        } else {
-          if (rest.length == 0) {
-            (object as ComplexObject)[key] = value;
-            console.log("lookup() key =", key);
-            return;
-          } else {
-            return lookup( (object as ComplexObject)[key], rest, value);
-          }
-        }
-      }
-
-    }
-    lookup(this.object, paths, value);
-  }
+  return patch(value, path === "" ? [] : path.split("."), propValue);
 
 }
 
 export const PartialObjectForm = function PartialObjectForm() {
 
   // source of initial value: https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html#Example5
-  const [object, setObject] = useState(new PathedObject({
+  const value = {
     register: {
       in: {
         type: "s3",
@@ -175,29 +170,30 @@ export const PartialObjectForm = function PartialObjectForm() {
         },
       },
     },
-  }));
+  };
+  const [valueAndPath, setValueAndPath] = useState([value, ""] as ValueAndPath);
 
   const [formClassName, setFormClassName] = useState("");
-  const [json, setJson] = useState(jsonFormat(object.getPathedObject() || null, { type: "space", size: 2 }));
+  const [json, setJson] = useState(jsonFormat(valueAndPath[0], { type: "space", size: 2 }));
 
   useEffect(() => {
-    setJson(jsonFormat(object.getPathedObject() || null, { type: "space", size: 2 }));
-  }, [object]);
+    setJson(jsonFormat(lookupValueAndPath(valueAndPath), { type: "space", size: 2 }));
+  }, [valueAndPath]);
 
-  function updateJson(newValue: string) {
-    setJson(newValue);
+  function updateJson(newJson: string) {
+    setJson(newJson);
     try {
-      console.log("updateJson() -- newValue = ", newValue);
-      const value = JSON.parse(newValue);
-      console.log("updateJson() -- value = ", value);
+      // console.log("updateJson() -- newJson = ", newJson);
+      const propValue = JSON.parse(newJson);
+      // console.log("updateJson() -- propValue = ", propValue);
       // if (JSON.stringify(object) === JSON.stringify(value)) {
       //   setFormClassName("");
       // } else {
       //   setFormClassName("changed");
       // }
-      object.setPathedObject(value);
-      console.log("updateJson() -- object.object = ", object.object);
-      setObject(new PathedObject(object.object, object.path));
+      const newValue = patchValueAndPath(valueAndPath, propValue);
+      // console.log("updateJson() -- newValue = ", newValue);
+      setValueAndPath([newValue, valueAndPath[1]]);
     } catch {
       setFormClassName("invalid");
     }
@@ -208,16 +204,16 @@ export const PartialObjectForm = function PartialObjectForm() {
       <Row>
         <Col>
           <div>Whole</div>
-          <textarea value={jsonFormat(object.object!, { type: "space", size: 2 })} rows={25} style={{
+          <textarea value={jsonFormat(valueAndPath[0], { type: "space", size: 2 })} rows={25} style={{
             width: '100%',
           }} readOnly />
         </Col>
         <Col sm={2}>
-          <a href={`#json`} onClick={() => setObject(new PathedObject(object.object))} style={{ fontWeight: object.path === undefined ? 'bold' : '' }}>object</a>
-          <ObjectTree pathedObject={object} setObject={setObject} value={object.object} />
+          <a href={`#json`} onClick={() => setValueAndPath([valueAndPath[0], ""])} style={{ fontWeight: valueAndPath[1] === "" ? 'bold' : '' }}>object</a>
+          <ObjectTree valueAndPath={valueAndPath} setValueAndPath={setValueAndPath} value={valueAndPath[0]} />
         </Col>
         <Col>
-          <div>Partial: {object.path || "."}</div>
+          <div>Partial: {valueAndPath[1] || "."}</div>
           <textarea value={json} rows={25} className={formClassName} style={{
             width: '100%',
           }} onChange={e => updateJson(e.target.value)} />
@@ -229,13 +225,13 @@ export const PartialObjectForm = function PartialObjectForm() {
 }
 
 interface ObjectTreeProp {
-  pathedObject: PathedObject;
-  setObject: React.Dispatch<React.SetStateAction<PathedObject>>;
-  value: Json;
+  valueAndPath: ValueAndPath;
+  setValueAndPath: React.Dispatch<React.SetStateAction<ValueAndPath>>;
   parentPath?: string
+  value: JsonValue
 }
 
-function ObjectTree({ pathedObject, setObject, value, parentPath }: ObjectTreeProp) {
+function ObjectTree({ valueAndPath, setValueAndPath, value, parentPath }: ObjectTreeProp) {
   // console.log(`OjbectTree() <<< .value = `, value)
 
   if (Array.isArray(value)) {
@@ -246,8 +242,8 @@ function ObjectTree({ pathedObject, setObject, value, parentPath }: ObjectTreePr
           const path = parentPath === undefined ? index.toString() : `${parentPath}.${index}`;
           return (
             <li key={index}>
-              <a href={`#json-${path}`} onClick={() => setObject(new PathedObject(pathedObject.object, path))} style={{ fontWeight: pathedObject.path === path ? 'bold' : '' }}><i>(element)</i></a>
-              {hasNonScalarProperty(item) ? (<ObjectTree pathedObject={pathedObject} setObject={setObject} value={item} parentPath={path} />) : (<></>)}
+              <a href={`#json-${path}`} onClick={() => setValueAndPath([valueAndPath[0], path])} style={{ fontWeight: valueAndPath[1] === path ? 'bold' : '' }}><i>(element)</i></a>
+              {hasNonScalarProperty(item) ? (<ObjectTree valueAndPath={valueAndPath} setValueAndPath={setValueAndPath} value={item} parentPath={path} />) : (<></>)}
             </li>
           );
         })}
@@ -278,8 +274,8 @@ function ObjectTree({ pathedObject, setObject, value, parentPath }: ObjectTreePr
             const cn = isScalar(item) ? "dimmed" : "";
             return (
               <li className={cn} key={key}>
-                <a href={`#json-${path}`} onClick={() => setObject(new PathedObject(pathedObject.object, path))} style={{ fontWeight: pathedObject.path === path ? 'bold' : '' }}>{key}</a>
-                {!isScalar(item) && hasNonScalarProperty(item) ? (<ObjectTree pathedObject={pathedObject} setObject={setObject} value={item} parentPath={path} />) : (<></>)}
+                <a href={`#json-${path}`} onClick={() => setValueAndPath([valueAndPath[0], path])} style={{ fontWeight: valueAndPath[1] === path ? 'bold' : '' }}><i>{key}</i></a>
+                {!isScalar(item) && hasNonScalarProperty(item) ? (<ObjectTree valueAndPath={valueAndPath} setValueAndPath={setValueAndPath} value={item} parentPath={path} />) : (<></>)}
               </li>
             );
           })}
@@ -299,7 +295,7 @@ function ObjectTree({ pathedObject, setObject, value, parentPath }: ObjectTreePr
 
 }
 
-function isScalar(item: Json) {
+function isScalar(item: JsonValue) {
   switch (typeof item) {
     case "undefined":
       return true;
@@ -319,7 +315,7 @@ function isScalar(item: Json) {
   }
 }
 
-function hasNonScalarProperty(item: Json) {
+function hasNonScalarProperty(item: JsonValue) {
   if (typeof item === "object" && item !== null) {
     // console.log(`hasNonScalarProperty() <<< item = `, item);
     const hasNonScalarProperty = Object.entries(item).map(([k, v]) => {
