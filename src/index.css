@@ -11,3 +11,19 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.invalid {
+  background-color: hsl(0, 100%, 98%);
+}
+
+.changed {
+  background-color: hsl(60, 100%, 98%);
+}
+
+textarea {
+  font-family: "Droid Sans Mono", "Consolas", monospace;
+}
+
+ul.tree {
+  padding-left: 1rem;
+}
