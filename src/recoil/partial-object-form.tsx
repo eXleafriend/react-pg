@@ -118,7 +118,14 @@ function patch([path, value]: PathedValue, propValue: JsonValue): JsonValue {
 export const PartialObjectForm = function PartialObjectForm() {
 
   // source of initial value: https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html#Example5
-  const value = {
+  const hash = global.location.hash;
+  const initialPath = hash.startsWith("#json")
+    ? hash.startsWith("#json-")
+      ? hash.substring("#json-".length)
+      : ""
+    : ""
+    ;
+  const initialValue = {
     register: {
       in: {
         type: "s3",
@@ -173,14 +180,7 @@ export const PartialObjectForm = function PartialObjectForm() {
       },
     },
   };
-  const hash = global.location.hash;
-  const path = hash.startsWith("#json")
-    ? hash.startsWith("#json-")
-      ? hash.substring("#json-".length)
-      : ""
-    : ""
-    ;
-  const [pathedValue, setPathedValue] = useState([path, value] as PathedValue);
+  const [pathedValue, setPathedValue] = useState([initialPath, initialValue] as PathedValue);
 
   const [formClassName, setFormClassName] = useState("");
   const [json, setJson] = useState(jsonFormat(lookup(pathedValue), { type: "space", size: 2 }));
