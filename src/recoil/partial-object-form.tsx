@@ -18,6 +18,8 @@ export type JsonArray = JsonValue[];
 export type JsonValue = JsonScalar | JsonObject | JsonArray;
 
 export type PathedValue = [JsonValue, string];
+const V = 0;
+const P = 1;
 
 function lookup([value, path]: PathedValue): JsonValue {
 
@@ -200,7 +202,7 @@ export const PartialObjectForm = function PartialObjectForm() {
       // }
       const newValue = patch(pathedValue, propValue);
       // console.log("updateJson() -- newValue = ", newValue);
-      setPathedValue([newValue, pathedValue[1]]);
+      setPathedValue([newValue, pathedValue[P]]);
     } catch {
       setFormClassName("invalid");
     }
@@ -211,16 +213,16 @@ export const PartialObjectForm = function PartialObjectForm() {
       <Row>
         <Col>
           <div>Whole</div>
-          <textarea value={jsonFormat(pathedValue[0], { type: "space", size: 2 })} rows={25} style={{
+          <textarea value={jsonFormat(pathedValue[V], { type: "space", size: 2 })} rows={25} style={{
             width: '100%',
           }} readOnly />
         </Col>
         <Col sm={2}>
-          <a href={`#json`} onClick={() => setPathedValue([pathedValue[0], ""])} style={{ fontWeight: pathedValue[1] === "" ? 'bold' : '' }}>object</a>
-          <ObjectTree pathedValue={pathedValue} setValueAndPath={setPathedValue} value={pathedValue[0]} />
+          <a href={`#json`} onClick={() => setPathedValue([pathedValue[V], ""])} style={{ fontWeight: pathedValue[P] === "" ? 'bold' : '' }}>object</a>
+          <ObjectTree pathedValue={pathedValue} setValueAndPath={setPathedValue} value={pathedValue[V]} />
         </Col>
         <Col>
-          <div>Partial: {pathedValue[1] || "."}</div>
+          <div>Partial: {pathedValue[P] || "."}</div>
           <textarea value={json} rows={25} className={formClassName} style={{
             width: '100%',
           }} onChange={e => updateJson(e.target.value)} />
@@ -249,7 +251,7 @@ function ObjectTree({ pathedValue, setValueAndPath, value, parentPath }: ObjectT
           const path = parentPath === undefined ? index.toString() : `${parentPath}.${index}`;
           return (
             <li key={index}>
-              <a href={`#json-${path}`} onClick={() => setValueAndPath([pathedValue[0], path])} style={{ fontWeight: pathedValue[1] === path ? 'bold' : '' }}><i>(element)</i></a>
+              <a href={`#json-${path}`} onClick={() => setValueAndPath([pathedValue[V], path])} style={{ fontWeight: pathedValue[P] === path ? 'bold' : '' }}><i>(element)</i></a>
               {hasNonScalarProperty(item) ? (<ObjectTree pathedValue={pathedValue} setValueAndPath={setValueAndPath} value={item} parentPath={path} />) : (<></>)}
             </li>
           );
@@ -281,7 +283,7 @@ function ObjectTree({ pathedValue, setValueAndPath, value, parentPath }: ObjectT
             const cn = isScalar(item) ? "dimmed" : "";
             return (
               <li className={cn} key={key}>
-                <a href={`#json-${path}`} onClick={() => setValueAndPath([pathedValue[0], path])} style={{ fontWeight: pathedValue[1] === path ? 'bold' : '' }}><i>{key}</i></a>
+                <a href={`#json-${path}`} onClick={() => setValueAndPath([pathedValue[V], path])} style={{ fontWeight: pathedValue[P] === path ? 'bold' : '' }}><i>{key}</i></a>
                 {!isScalar(item) && hasNonScalarProperty(item) ? (<ObjectTree pathedValue={pathedValue} setValueAndPath={setValueAndPath} value={item} parentPath={path} />) : (<></>)}
               </li>
             );
