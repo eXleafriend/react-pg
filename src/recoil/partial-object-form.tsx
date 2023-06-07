@@ -272,17 +272,13 @@ function ObjectTree({ pathedValue, setPathedValue, propValue, parentPath }: Obje
 
       return (
         <ul className="tree">
-          {Object.entries(propValue).map(([key, item]) => {
+          {Object.entries(propValue).filter(([, item]) => !isScalar(item)).map(([key, item]) => {
             // console.log("key", key)
             // console.log("item", item)
             // console.log("isScalar(item)", isScalar(item))
             const currentPath = parentPath === undefined ? key : `${parentPath}.${key}`;
-            if (isScalar(item)) {
-              return (<></>);
-            }
-            const cn = isScalar(item) ? "dimmed" : "";
             return (
-              <li className={cn} key={key}>
+              <li key={key}>
                 <a href={`#json-${currentPath}`} onClick={() => setPathedValue([currentPath, value])} style={{ fontWeight: path === currentPath ? 'bold' : '' }}><i>{key}</i></a>
                 {!isScalar(item) && hasNonScalarProperty(item) ? (<ObjectTree pathedValue={pathedValue} setPathedValue={setPathedValue} propValue={item} parentPath={currentPath} />) : (<></>)}
               </li>
