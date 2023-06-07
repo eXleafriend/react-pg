@@ -87,7 +87,7 @@ function patchValueAndPath([value, path]: ValueAndPath, propValue: JsonValue): J
         console.log("patch() --- rest = ", rest);
         const patched = patch(array[index], rest, propValue);
         console.log("patch() --- patched = ", patched);
-          array[index] = patched;
+        array[index] = patched;
         console.log("patch() >>> array = ", array);
         return array;
       } else {
@@ -171,10 +171,17 @@ export const PartialObjectForm = function PartialObjectForm() {
       },
     },
   };
-  const [valueAndPath, setValueAndPath] = useState([value, ""] as ValueAndPath);
+  const hash = global.location.hash;
+  const path = hash.startsWith("#json")
+    ? hash.startsWith("#json-")
+      ? hash.substring("#json-".length)
+      : ""
+    : ""
+    ;
+  const [valueAndPath, setValueAndPath] = useState([value, path] as ValueAndPath);
 
   const [formClassName, setFormClassName] = useState("");
-  const [json, setJson] = useState(jsonFormat(valueAndPath[0], { type: "space", size: 2 }));
+  const [json, setJson] = useState(jsonFormat(lookupValueAndPath(valueAndPath), { type: "space", size: 2 }));
 
   useEffect(() => {
     setJson(jsonFormat(lookupValueAndPath(valueAndPath), { type: "space", size: 2 }));
