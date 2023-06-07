@@ -324,7 +324,7 @@ function isScalar(item: JsonValue) {
   }
 }
 
-function hasNonScalarProperty(item: JsonValue) {
+function hasNonScalarProperty(item: JsonValue): boolean {
   if (typeof item === "object" && item !== null) {
     // console.log(`hasNonScalarProperty() <<< item = `, item);
     const hasNonScalarProperty = Object.entries(item).map(([k, v]) => {
@@ -336,6 +336,7 @@ function hasNonScalarProperty(item: JsonValue) {
     // console.log(`hasNonScalarProperty() >>> hasNonScalarProperty = `, hasNonScalarProperty);
     return hasNonScalarProperty;
   }
+  return false;
   // console.log(`hasNonScalarProperty() >>> hasNonScalarProperty = `, false);
 }
 
