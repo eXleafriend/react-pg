@@ -58,22 +58,22 @@ function lookup([path, value]: PathedValue): JsonValue {
 function patch([path, value]: PathedValue, propValue: JsonValue): JsonValue {
 
   function _patch(value: JsonValue, paths: string[], propValue: JsonValue): JsonValue {
-    console.log("=== patch() ===")
-    console.log("patch() <<< value = ", value)
-    console.log("patch() <<< paths = ", paths)
-    console.log("patch() <<< propValue = ", propValue)
+    // console.log("=== patch() ===")
+    // console.log("patch() <<< value = ", value)
+    // console.log("patch() <<< paths = ", paths)
+    // console.log("patch() <<< propValue = ", propValue)
     if (value === null) {
-      console.log("patch() >>> value = ", null)
+      // console.log("patch() >>> value = ", null)
       return null;
     }
     if (paths.length === 0) {
-      console.log("patch() >>> value = ", value)
+      // console.log("patch() >>> value = ", value)
       return propValue;
     }
 
     if (typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
       console.warn(`Ignore paths for ${typeof value} type: `, paths);
-      console.log("patch() >>> value = ", value)
+      // console.log("patch() >>> value = ", value)
       return propValue;
     }
 
@@ -82,13 +82,13 @@ function patch([path, value]: PathedValue, propValue: JsonValue): JsonValue {
       if (/^\d+$/.test(key)) {
         const index = parseInt(key, 10);
         const array = [...value];
-        console.log("patch() --- array = ", array);
-        console.log("patch() --- index = ", index);
-        console.log("patch() --- rest = ", rest);
+        // console.log("patch() --- array = ", array);
+        // console.log("patch() --- index = ", index);
+        // console.log("patch() --- rest = ", rest);
         const patched = _patch(array[index], rest, propValue);
-        console.log("patch() --- patched = ", patched);
+        // console.log("patch() --- patched = ", patched);
         array[index] = patched;
-        console.log("patch() >>> array = ", array);
+        // console.log("patch() >>> array = ", array);
         return array;
       } else {
         console.warn(`Ignore key "${key}" for Array type (paths: ${JSON.stringify(paths)})`);
@@ -97,13 +97,13 @@ function patch([path, value]: PathedValue, propValue: JsonValue): JsonValue {
 
     } else {
       const object = { ...value };
-      console.log("patch() --- object = ", object);
-      console.log("patch() --- key = ", key);
-      console.log("patch() --- rest = ", rest);
+      // console.log("patch() --- object = ", object);
+      // console.log("patch() --- key = ", key);
+      // console.log("patch() --- rest = ", rest);
       const patched = _patch(value[key], rest, propValue);
-      console.log("patch() --- patched = ", patched);
+      // console.log("patch() --- patched = ", patched);
       object[key] = patched;
-      console.log("patch() --- object = ", object);
+      // console.log("patch() --- object = ", object);
       return object;
     }
 
