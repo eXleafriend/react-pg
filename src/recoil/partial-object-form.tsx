@@ -17,11 +17,11 @@ export type JsonArray = JsonValue[];
 
 export type JsonValue = JsonScalar | JsonObject | JsonArray;
 
-export type ValueAndPath = [JsonValue, string];
+export type PathedValue = [JsonValue, string];
 
-function lookupValueAndPath([value, path]: ValueAndPath): JsonValue {
+function lookup([value, path]: PathedValue): JsonValue {
 
-  function lookup(value: JsonValue, paths: string[]): JsonValue {
+  function _lookup(value: JsonValue, paths: string[]): JsonValue {
     if (value === null) {
       return null;
     }
@@ -38,7 +38,7 @@ function lookupValueAndPath([value, path]: ValueAndPath): JsonValue {
     if (Array.isArray(value)) {
       if (/^\d+$/.test(key)) {
         const index = parseInt(key, 10);
-        return lookup(value[index], rest);
+        return _lookup(value[index], rest);
       } else {
         console.warn(`Ignore key "${key}" for Array type (paths: ${JSON.stringify(paths)})`);
         return value;
@@ -46,18 +46,18 @@ function lookupValueAndPath([value, path]: ValueAndPath): JsonValue {
 
     } else {
 
-      return lookup(value[key], rest);
+      return _lookup(value[key], rest);
     }
 
   }
 
-  return lookup(value, path === "" ? [] : path.split("."));
+  return _lookup(value, path === "" ? [] : path.split("."));
 
 }
 
-function patchValueAndPath([value, path]: ValueAndPath, propValue: JsonValue): JsonValue {
+function patch([value, path]: PathedValue, propValue: JsonValue): JsonValue {
 
-  function patch(value: JsonValue, paths: string[], propValue: JsonValue): JsonValue {
+  function _patch(value: JsonValue, paths: string[], propValue: JsonValue): JsonValue {
     console.log("=== patch() ===")
     console.log("patch() <<< value = ", value)
     console.log("patch() <<< paths = ", paths)
@@ -85,7 +85,7 @@ function patchValueAndPath([value, path]: ValueAndPath, propValue: JsonValue): J
         console.log("patch() --- array = ", array);
         console.log("patch() --- index = ", index);
         console.log("patch() --- rest = ", rest);
-        const patched = patch(array[index], rest, propValue);
+        const patched = _patch(array[index], rest, propValue);
         console.log("patch() --- patched = ", patched);
         array[index] = patched;
         console.log("patch() >>> array = ", array);
@@ -100,7 +100,7 @@ function patchValueAndPath([value, path]: ValueAndPath, propValue: JsonValue): J
       console.log("patch() --- object = ", object);
       console.log("patch() --- key = ", key);
       console.log("patch() --- rest = ", rest);
-      const patched = patch(value[key], rest, propValue);
+      const patched = _patch(value[key], rest, propValue);
       console.log("patch() --- patched = ", patched);
       object[key] = patched;
       console.log("patch() --- object = ", object);
@@ -109,7 +109,7 @@ function patchValueAndPath([value, path]: ValueAndPath, propValue: JsonValue): J
 
   }
 
-  return patch(value, path === "" ? [] : path.split("."), propValue);
+  return _patch(value, path === "" ? [] : path.split("."), propValue);
 
 }
 
@@ -178,14 +178,14 @@ export const PartialObjectForm = function PartialObjectForm() {
       : ""
     : ""
     ;
-  const [valueAndPath, setValueAndPath] = useState([value, path] as ValueAndPath);
+  const [pathedValue, setPathedValue] = useState([value, path] as PathedValue);
 
   const [formClassName, setFormClassName] = useState("");
-  const [json, setJson] = useState(jsonFormat(lookupValueAndPath(valueAndPath), { type: "space", size: 2 }));
+  const [json, setJson] = useState(jsonFormat(lookup(pathedValue), { type: "space", size: 2 }));
 
   useEffect(() => {
-    setJson(jsonFormat(lookupValueAndPath(valueAndPath), { type: "space", size: 2 }));
-  }, [valueAndPath]);
+    setJson(jsonFormat(lookup(pathedValue), { type: "space", size: 2 }));
+  }, [pathedValue]);
 
   function updateJson(newJson: string) {
     setJson(newJson);
@@ -198,9 +198,9 @@ export const PartialObjectForm = function PartialObjectForm() {
       // } else {
       //   setFormClassName("changed");
       // }
-      const newValue = patchValueAndPath(valueAndPath, propValue);
+      const newValue = patch(pathedValue, propValue);
       // console.log("updateJson() -- newValue = ", newValue);
-      setValueAndPath([newValue, valueAndPath[1]]);
+      setPathedValue([newValue, pathedValue[1]]);
     } catch {
       setFormClassName("invalid");
     }
@@ -211,16 +211,16 @@ export const PartialObjectForm = function PartialObjectForm() {
       <Row>
         <Col>
           <div>Whole</div>
-          <textarea value={jsonFormat(valueAndPath[0], { type: "space", size: 2 })} rows={25} style={{
+          <textarea value={jsonFormat(pathedValue[0], { type: "space", size: 2 })} rows={25} style={{
             width: '100%',
           }} readOnly />
         </Col>
         <Col sm={2}>
-          <a href={`#json`} onClick={() => setValueAndPath([valueAndPath[0], ""])} style={{ fontWeight: valueAndPath[1] === "" ? 'bold' : '' }}>object</a>
-          <ObjectTree valueAndPath={valueAndPath} setValueAndPath={setValueAndPath} value={valueAndPath[0]} />
+          <a href={`#json`} onClick={() => setPathedValue([pathedValue[0], ""])} style={{ fontWeight: pathedValue[1] === "" ? 'bold' : '' }}>object</a>
+          <ObjectTree pathedValue={pathedValue} setValueAndPath={setPathedValue} value={pathedValue[0]} />
         </Col>
         <Col>
-          <div>Partial: {valueAndPath[1] || "."}</div>
+          <div>Partial: {pathedValue[1] || "."}</div>
           <textarea value={json} rows={25} className={formClassName} style={{
             width: '100%',
           }} onChange={e => updateJson(e.target.value)} />
@@ -232,13 +232,13 @@ export const PartialObjectForm = function PartialObjectForm() {
 }
 
 interface ObjectTreeProp {
-  valueAndPath: ValueAndPath;
-  setValueAndPath: React.Dispatch<React.SetStateAction<ValueAndPath>>;
+  pathedValue: PathedValue;
+  setValueAndPath: React.Dispatch<React.SetStateAction<PathedValue>>;
   parentPath?: string
   value: JsonValue
 }
 
-function ObjectTree({ valueAndPath, setValueAndPath, value, parentPath }: ObjectTreeProp) {
+function ObjectTree({ pathedValue, setValueAndPath, value, parentPath }: ObjectTreeProp) {
   // console.log(`OjbectTree() <<< .value = `, value)
 
   if (Array.isArray(value)) {
@@ -249,8 +249,8 @@ function ObjectTree({ valueAndPath, setValueAndPath, value, parentPath }: Object
           const path = parentPath === undefined ? index.toString() : `${parentPath}.${index}`;
           return (
             <li key={index}>
-              <a href={`#json-${path}`} onClick={() => setValueAndPath([valueAndPath[0], path])} style={{ fontWeight: valueAndPath[1] === path ? 'bold' : '' }}><i>(element)</i></a>
-              {hasNonScalarProperty(item) ? (<ObjectTree valueAndPath={valueAndPath} setValueAndPath={setValueAndPath} value={item} parentPath={path} />) : (<></>)}
+              <a href={`#json-${path}`} onClick={() => setValueAndPath([pathedValue[0], path])} style={{ fontWeight: pathedValue[1] === path ? 'bold' : '' }}><i>(element)</i></a>
+              {hasNonScalarProperty(item) ? (<ObjectTree pathedValue={pathedValue} setValueAndPath={setValueAndPath} value={item} parentPath={path} />) : (<></>)}
             </li>
           );
         })}
@@ -281,8 +281,8 @@ function ObjectTree({ valueAndPath, setValueAndPath, value, parentPath }: Object
             const cn = isScalar(item) ? "dimmed" : "";
             return (
               <li className={cn} key={key}>
-                <a href={`#json-${path}`} onClick={() => setValueAndPath([valueAndPath[0], path])} style={{ fontWeight: valueAndPath[1] === path ? 'bold' : '' }}><i>{key}</i></a>
-                {!isScalar(item) && hasNonScalarProperty(item) ? (<ObjectTree valueAndPath={valueAndPath} setValueAndPath={setValueAndPath} value={item} parentPath={path} />) : (<></>)}
+                <a href={`#json-${path}`} onClick={() => setValueAndPath([pathedValue[0], path])} style={{ fontWeight: pathedValue[1] === path ? 'bold' : '' }}><i>{key}</i></a>
+                {!isScalar(item) && hasNonScalarProperty(item) ? (<ObjectTree pathedValue={pathedValue} setValueAndPath={setValueAndPath} value={item} parentPath={path} />) : (<></>)}
               </li>
             );
           })}
