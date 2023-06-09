@@ -14,7 +14,9 @@ import reportWebVitals from './reportWebVitals';
 
 const router = createBrowserRouter([
   convertToRouteObject(navigationRoot, e => (<Layout>{e}</Layout>)),
-]);
+], {
+  basename: "/react-pg"
+});
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

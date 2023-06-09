@@ -11,7 +11,7 @@ import Router from "./Router";
 
 export const navigationRoot = newRoutingNavigationItem({
   title: "React Playground",
-  path: "",
+  path: `${process.env.PUBLIC_URL}/`,
   element: <App />,
   children: [
     {
